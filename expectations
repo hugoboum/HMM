@@ -1,0 +1,10 @@
+Good afternoon, everyone,
+
+as agreed I send you the expectations of the project related to the HMM course.
+All the projects are linked to the HMMs, so for each project it is a question of describing what we want to do and therefore the approach adopted to do it. Typically if you have a project related to the Kalman filter it is because we are in a continuous state variable context and with a linear and Gaussian modelisation. So the use of the Kalman filter is appropriate for this study context.
+When you use a methodology, it is therefore expected that it will be explained. We are not waiting for proof of its functioning but above all to explain the main principles of the method that make it work. Once this step is detailed, it is expected to implement the approach if time permits. For this implementation you can use the codes provided in class or use the existing packages directly in your software of your choice. There is no need to explain the package since you will have already described the methodology before the implementation. The project score will be based on an overall assessment of the project. A well explained methodology with not fully consistent numerical results will be valued as much as consistent numerical results but an unexplained methodology.
+To do this, I will organize a one-hour session during the week of November 18 to support you on this project. If however you encounter difficulties before this session or if the modalities are not clear enough I remain available at any time to answer your questions. My office is 257 on the second floor. Also, if the expectations of the project seem too ambitious to you in view of the workload in the master and the short time you have, do not hesitate to inform me.
+Don't forget to give me your groups and choice of topics!
+
+See you very soon
+Salima

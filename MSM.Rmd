@@ -1,0 +1,240 @@
+---
+title: "Project 3 : Markov switching models"
+author: 'Mattia Guerri - Hugo Brehier'
+subtitle: 'Statistics for Smart Data'
+date: 'November 29^th^ 2019'
+output: pdf_document
+---
+
+\pagebreak
+\tableofcontents
+\pagebreak
+
+
+```{r global_options, include=FALSE, echo = FALSE, warning = FALSE, fig.align="center"}
+knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```
+
+# Introduction
+
+In this project, we study Markov Switching Models. 
+First, a simulation study is done.
+Next, we define the model and the estimation algorithm.
+Finally, we apply it to real financial data.
+
+\pagebreak
+
+# Simulated Data
+
+Install the depmixS4 and quantmod libraries
+```{r}
+library('depmixS4')
+library('quantmod')
+library(ggplot2)
+library(scales)
+set.seed(1)
+```
+
+Create the parameters for the bull and bear market returns distributions
+```{r}
+Nklower <- 50
+Nkupper <- 150
+bullmean <- 0.1
+bullvar <- 0.1
+bearmean <- -0.05
+bearvar <- 0.2
+```
+
+Create the list of durations (in days) for each regime
+```{r}
+days = replicate(5, sample(Nklower :Nkupper, 1))
+```
+
+Create the various bull and bear markets returns
+```{r}
+marketbull1 <- rnorm( days[1], bullmean, bullvar )
+marketbear2 <- rnorm( days[2], bearmean, bearvar )
+marketbull3 <- rnorm( days[3], bullmean, bullvar )
+marketbear4 <- rnorm( days[4], bearmean, bearvar )
+marketbull5 <- rnorm( days[5], bullmean, bullvar )
+```
+
+Create the list of true regime states and full returns list
+```{r}
+trueregimes <-c( rep(1,days[1]), rep(2,days[2]), rep(1,days[3]), rep(2,days[4]), rep(1,days[5]))
+returns <-c( marketbull1, marketbear2, marketbull3, marketbear4, marketbull5)
+```
+
+Plotting the returns shows the clear changes in mean and variance between the regime
+switches.
+```{r}
+plot(returns, type="l", xlab='', ylab="Returns")
+```
+
+ Create and fit the Hidden Markov Model
+```{r}
+hmm = depmix(returns ~ 1, family = gaussian(), nstates = 2, data=data.frame(returns))
+hmmfit = fit(hmm, verbose = FALSE)
+```
+
+ Output both the true regimes and the posterior probabilities of the regimes
+```{r}
+postprobs <- posterior(hmmfit)
+layout(1 :2)
+plot(postprobs$state, type='s', main='True Regimes', xlab='', ylab='Regime')
+matplot(postprobs[, -1], type='l', main='Regime Posterior Probabilities',ylab='Probability')
+legend(x='topright', c('Bull','Bear'), fill=1:2, bty='n')
+```
+
+\pagebreak
+# Model behind the code
+## Markov Switching Models
+
+Write the MS model.
+Documented from \cite{JH_RMS} and \cite{GT_RMS} and \cite{FA_RMS} . 
+
+
+## EM algorithm
+
+EM Estimation method, maximum likelihood. Also Backward-Forward ?
+
+\pagebreak
+# Application to real financial data
+## S&P Index
+
+Obtain S&P500 data from 2004 onwards
+```{r}
+getSymbols( '^GSPC',src="yahoo", from="2004-01-01")
+    ```
+
+```{r}
+values = as.data.frame(GSPC)
+n= nrow(values)
+values$date = as.Date(rownames(values))
+
+ggplot(values, aes(x=date, y=GSPC.Open,group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+  labels = date_format('%y')) + xlab('year')
+
+```
+
+```{r}
+gspc.returns = as.data.frame((values[2:n, 1] - values[1:(n-1), 1]) /  values[1:(n-1), 1])
+gspc.returns$date = as.Date(rownames(values)[2:n])
+
+colnames(gspc.returns) = c('returns','date')
+
+ggplot(gspc.returns, aes(x=date, y=returns,group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+  labels = date_format('%y')) + xlab('Year')
+```
+
+```{r}
+k=10
+AICs = numeric(length(2:k))
+
+for (i in 2:k) {
+  hmm <- depmix(returns ~ 1, family = gaussian(), nstates = i, data=data.frame(gspc.returns))
+  hmmfit <- fit(hmm, verbose = FALSE)
+  AICs[i-1] = AIC(hmmfit)
+}
+
+```
+
+```{r}
+bestk = which.min(AICs) + 1
+bestk
+```
+
+```{r}
+hmm <- depmix(returns ~ 1, family = gaussian(), nstates = bestk, data=data.frame(gspc.returns))
+hmmfit <- fit(hmm, verbose = FALSE)
+```
+
+```{r}
+summary(hmmfit)
+```
+
+
+
+```{r}
+dat = posterior(hmmfit)
+dat$date = gspc.returns$date
+dat$ret = gspc.returns$returns
+```
+
+```{r}
+ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set1")
+```
+
+The most volatil bear state appears almost only during the subprime crisis. It shows the market was in an exceptional state.
+
+## IWM
+
+From etf.com:
+IWM tracks a market-cap-weighted index of US small-cap stocks. The index selects stocks ranked 1,001-3,000 by market cap.
+
+```{r}
+getSymbols( 'IWM',src="yahoo", from="2004-01-01" )
+```
+
+```{r}
+values = as.data.frame(IWM)
+n= nrow(values)
+values$date = as.Date(rownames(values))
+
+ggplot(values, aes(x=date, y=IWM.Open,group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+  labels = date_format('%y')) + xlab('year')
+```
+
+```{r}
+iwm.returns = as.data.frame((values[2:n, 1] - values[1:(n-1), 1]) /  values[1:(n-1), 1])
+iwm.returns$date = as.Date(rownames(values)[2:n])
+
+colnames(iwm.returns) = c('returns','date')
+
+ggplot(iwm.returns, aes(x=date, y=returns,group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+  labels = date_format('%y')) + xlab('Year')
+```
+
+```{r}
+k=10
+AICs = numeric(length(2:k))
+
+for (i in 2:k) {
+  hmm <- depmix(returns ~ 1, family = gaussian(), nstates = i, data=data.frame(iwm.returns))
+  hmmfit <- fit(hmm, verbose = FALSE)
+  AICs[i-1] = AIC(hmmfit)
+}
+
+```
+
+```{r}
+bestk = which.min(AICs) +1
+bestk
+```
+
+```{r}
+hmm <- depmix(returns ~ 1, family = gaussian(), nstates = bestk, data=data.frame(iwm.returns))
+hmmfit <- fit(hmm, verbose = FALSE)
+```
+
+```{r}
+summary(hmmfit)
+```
+
+```{r}
+dat = posterior(hmmfit)
+dat$date = iwm.returns$date
+dat$ret = iwm.returns$returns
+```
+
+```{r}
+ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set1")
+```
+
+Like with the S&P index, the most volatil bear state appears during the crisis.
+
+\pagebreak
+\bibliographystyle{abbrv}
+\bibliography{biblio}
