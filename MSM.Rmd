@@ -120,14 +120,14 @@ Then the distribution of $Y_{t}$ conditional to $S_{t}$ is:
   (Y_{t} | S_{t} = k) \sim \mathcal{D}(\theta_{k}) = \mathcal{N}(\mu_{k},\sigma_{k}^{2})
 \]
 
-The probability distribution of states is defined by the vector $\boldsymbol{\pi_{t}} = (\pi_{tk})_{k} = (\mathbb{P}(S_{t}=k))_{k}$. \newline
+The density of states at time $t$ is defined by the vector $\boldsymbol{\pi_{k}} = (\pi_{k})_{k} = (\mathbb{P}(S_{t}=k))_{k}$. \newline
 
 The non-conditional density of $Y_{t}$ is:
 \[
 \sum\limits_{n=1}^{k}   \pi_{tk}p(Y_{t} | \mu_{k},\sigma_{k})
 \]
 
-In our case the hidden state space is discrete (regimes) , while the observations are continuous (returns). We have to optimize the model parameters, composed of the regimes parameters $\theta_{k} = (\mu_{k},\sigma_{k})$,the transition matrix $P$ and $\boldsymbol{\pi_{t}}$ . Based on observations $y_{1:n}$,random or prior initial parameters,  we use the EM algorithm for the discrete state space. (see course chap 2 part 4.1)
+In our case the hidden state space is discrete (regimes) , while the observations are continuous (returns). We have to optimize the model parameters, composed of the regimes parameters $\theta_{k} = (\mu_{k},\sigma_{k})$,the transition matrix $P$ and $\boldsymbol{\pi_{t}}$ . Based on observations $y_{1:n}$, random or prior initial parameters,  we use the EM algorithm for the discrete state space. (see course chap 2 part 4.1)
 After this, the estimation of the most likely hidden states sequence to have occured based on the observations and estimated parameters is done by the Viterbi algorithm.(see course chap 2 part 3)
 
 
