@@ -95,16 +95,26 @@ $k=2$ regimes, bear and bull.
 Markov Switching Model are defined as \cite{GT_RMS} \cite{FA_RMS} :
 
 \[
-  Y_{t}= \mu_{S_{t}} + \sigma_{S_{t}} \epsilon_{t}
-\]
-
-\[
-  \epsilon_{t} \sim \mathcal{N}(0,1),  S_{t} \in\mathbb{S} = \{ 1, \ldots,k \}
+  Y_{t}= \mu_{S_{t}} + \sigma_{S_{t}} \epsilon_{t} \; \textrm{where} \;
+  \epsilon_{t} \sim \mathcal{N}(0,1) \; \textrm{and} \;  S_{t} \in\mathbb{S} = \{ 1, \ldots,k \}
 \]
 For each state $k \in\mathbb{S}$, we have:
 \[
   \theta_{k} = (\mu_{k},\sigma_{k})
 \]
+
+The hidden state process $S_{t}$ is markovian :
+\[
+  \forall i,j \quad \mathbb{P}(S_{t} = j |S_{t-1} = i,S_{1:t-2},(\epsilon_{t})t) = 
+  \mathbb{P}(S_{t} = j |S_{t-1} = i) = p_{i,j}
+\]
+
+The initial distribution  of $S_{1}$ is defined as $\boldsymbol{\pi_{1}}$. \newline
+We have $P =(p_{i,j})_{i,j}$ the $k \times k$ transition matrix. It is stochastic:
+\[
+ \forall i,j \quad p_{i,j} \in [0,1] \quad  \forall i,\sum\limits_{j}p_{i,j} = 1
+\]
+
 Then the distribution of $Y_{t}$ conditional to $S_{t}$ is:
 \[
   (Y_{t} | S_{t} = k) \sim \mathcal{D}(\theta_{k}) = \mathcal{N}(\mu_{k},\sigma_{k}^{2})
@@ -114,8 +124,7 @@ The non-conditional density of $Y_{t}$ is:
 \sum\limits_{n=1}^{k}   \pi_{k}p(Y_{t} | \mu_{k},\sigma_{k})
 \]
 
-In our case the hidden state space is discrete (regimes) , while the observations are continuous (returns). To optimize the model parameters (composed of the regimes parameters, the transition and emission matrices for the hidden states), based on observations, we use the EM algorithm for the discrete 
-state space. (see course chap 2 part 4.1)
+In our case the hidden state space is discrete (regimes) , while the observations are continuous (returns). We have to optimize the model parameters, composed of the regimes parameters $\theta_{k} = (\mu_{k},\sigma_{k})$,the transition matrix $P$. Based on observations $y_{1:n}$,prior parameters distributions we use the EM algorithm for the discrete state space. (see course chap 2 part 4.1)
 After this, the estimation of the most likely hidden states sequence to have occured based on the observations and estimated parameters is done by the Viterbi algorithm.(see course chap 2 part 3)
 
 
