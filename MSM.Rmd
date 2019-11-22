@@ -88,16 +88,36 @@ legend(x='topright', c('Bull','Bear'), fill=1:2, bty='n')
 ```
 
 \pagebreak
-# Model behind the code
-## Markov Switching Models
+# Markov Switching Models
 
-Write the MS model.
-Documented from \cite{JH_RMS} and \cite{GT_RMS} and \cite{FA_RMS} . 
+The model used in the simulation study is called a Markov Switching Model \cite{JH_RMS} with
+$k=2$ regimes, bear and bull.
+Markov Switching Model are defined as \cite{GT_RMS} \cite{FA_RMS} :
 
+\[
+  Y_{t}= \mu_{S_{t}} + \sigma_{S_{t}} \epsilon_{t}
+\]
 
-## EM algorithm
+\[
+  \epsilon_{t} \sim \mathcal{N}(0,1),  S_{t} \in\mathbb{S} = \{ 1, \ldots,k \}
+\]
+For each state $k \in\mathbb{S}$, we have:
+\[
+  \theta_{k} = (\mu_{k},\sigma_{k})
+\]
+Then the distribution of $Y_{t}$ conditional to $S_{t}$ is:
+\[
+  (Y_{t} | S_{t} = k) \sim \mathcal{D}(\theta_{k}) = \mathcal{N}(\mu_{k},\sigma_{k}^{2})
+\]
+The non-conditional density of $Y_{t}$ is:
+\[
+\sum\limits_{n=1}^{k}   \pi_{k}p(Y_{t} | \mu_{k},\sigma_{k})
+\]
 
-EM Estimation method, maximum likelihood. Also Backward-Forward ?
+In our case the hidden state space is discrete (regimes) , while the observations are continuous (returns). To optimize the model parameters (composed of the regimes parameters, the transition and emission matrices for the hidden states), based on observations, we use the EM algorithm for the discrete 
+state space. (see course chap 2 part 4.1)
+After this, the estimation of the most likely hidden states sequence to have occured based on the observations and estimated parameters is done by the Viterbi algorithm.(see course chap 2 part 3)
+
 
 \pagebreak
 # Application to real financial data
@@ -237,5 +257,5 @@ ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) + geom_line() + sc
 Like with the S&P index, the most volatil bear state appears during the crisis.
 
 \pagebreak
-\bibliographystyle{abbrv}
+\bibliographystyle{plain}
 \bibliography{biblio}
