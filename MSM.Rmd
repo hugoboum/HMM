@@ -17,10 +17,20 @@ knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
 
 # Introduction
 
-In this project, we study Markov Switching Models. 
-First, a simulation study is done.
-Next, we define the model and the estimation algorithm.
-Finally, we apply it to real financial data.
+In this project, we model the return of two financial indicators. 
+We are interested in considering the process as process as an hidden Markov model. 
+The observed signal is defined by the financial indicators time series. 
+We assume that the returns at each time interval are drawn by Gaussian distributions 
+and that the indicators switch between the various distributions. The hidden state 
+space is thus represented by the parameters defining the normal distributions, 
+mean and variance. We take into account normal distribution with positive mean 
+and small variance, modelling a market bull phase, and distributions with 
+mean very close to zero and large variance, to simulate a market in a bear stage. 
+At first, in order to understand the code, we analyses simulated data. 
+Subsequently, we focus our attention of real financial data, in particular, 
+on two stock market index, i) S&P 500, an index measuring the performance of the shares 
+of 500 large companies listed on the USA stock exchanges; ii) IWM, linked to the 
+performance of 2000 America companies with small market cap.
 
 \pagebreak
 
