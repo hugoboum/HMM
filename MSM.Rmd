@@ -1,6 +1,6 @@
 ---
 title: "Project 3 : Markov switching models"
-author: 'Mattia Guerri - Hugo Brehier'
+author: 'Hugo Brehier - Mattia Guerri'
 subtitle: 'Statistics for Smart Data'
 date: 'November 29^th^ 2019'
 output: pdf_document
@@ -11,26 +11,41 @@ output: pdf_document
 \pagebreak
 
 
-```{r global_options, include=FALSE, echo = FALSE, warning = FALSE, fig.align="center"}
-knitr::opts_chunk$set(echo=TRUE, warning=FALSE, message=FALSE)
+```{r include= FALSE}
+knitr::opts_chunk$set(warning=FALSE, message=FALSE,fig.align="center")
 ```
 
 # Introduction
 
 In this project, we model the return of two financial indicators. 
-We are interested in considering the process as process as an hidden Markov model. 
-The observed signal is defined by the financial indicators time series. 
-We assume that the returns at each time interval are drawn by Gaussian distributions 
-and that the indicators switch between the various distributions. The hidden state 
-space is thus represented by the parameters defining the normal distributions, 
-mean and variance. We take into account normal distribution with positive mean 
-and small variance, modelling a market bull phase, and distributions with 
-mean very close to zero and large variance, to simulate a market in a bear stage. 
-At first, in order to understand the code, we analyses simulated data. 
-Subsequently, we focus our attention of real financial data, in particular, 
-on two stock market index, i) S&P 500, an index measuring the performance of the shares 
-of 500 large companies listed on the USA stock exchanges; ii) IWM, linked to the 
-performance of 2000 America companies with small market cap.
+We are interested in considering the process as a special case of hidden Markov models, 
+Markov switching models. \hfill \break
+
+At first, in order to understand the provided code, we analyse simulated data.
+The observed signal is defined by the financial returns time series. 
+We assume that the returns at each time interval are drawn by either one of two Gaussian distributions 
+and that the returns switch between the various distributions. The hidden state 
+space is thus represented by the regimes with different mean and variance. We take into account normal distribution with positive mean 
+and small variance, modelling a market bull phase, and distribution with 
+mean very close to zero and large variance, to simulate a market in a bear stage. \hfill \break
+
+After the simulation, we describe with more details the modelling strategy.\hfill \break
+
+Subsequently, we focus our attention on real financial data, in particular, 
+on two stock market indexes:
+\begin{itemize}
+  \item Standard and Poor's 500, an index measuring the performance of the shares of 500 large companies listed on the USA stock exchanges
+  \item  IWM, linked to the performance of 2000 America companies with smaller market cap.
+\end{itemize}
+
+\hfill \break
+
+We will use the following R packages:
+
+\begin{itemize}
+  \item depmixS4 to estimate the models
+  \item quantmod to download financial data
+\end{itemize}
 
 \pagebreak
 
@@ -97,6 +112,8 @@ matplot(postprobs[, -1], type='l', main='Regime Posterior Probabilities',ylab='P
 legend(x='topright', c('Bull','Bear'), fill=1:2, bty='n')
 ```
 
+The regimes are well retrieved by the model. Only at around $t=210$ can we observe a difficult period to estimate correctly. 
+
 \pagebreak
 # Markov Switching Models
 
@@ -130,7 +147,7 @@ Then the distribution of $Y_{t}$ conditional to $S_{t}$ is:
   (Y_{t} | S_{t} = k) \sim \mathcal{D}(\theta_{k}) = \mathcal{N}(\mu_{k},\sigma_{k}^{2})
 \]
 
-The density of states at time $t$ is defined by the vector $\boldsymbol{\pi_{k}} = (\pi_{k})_{k} = (\mathbb{P}(S_{t}=k))_{k}$. \newline
+The density of states at time $t$ is defined by the vector $\boldsymbol{\pi_{k}} = (\pi_{k})_{k} = (\mathbb{P}(S_{t}=k))_{k}$.  \hfill \break
 
 The non-conditional density of $Y_{t}$ is:
 \[
@@ -143,9 +160,12 @@ After this, the estimation of the most likely hidden states sequence to have occ
 
 \pagebreak
 # Application to real financial data
+
+We estimate MSM to daily returns on opening values of our financial indexes. To choose the optimal number of regimes, we compare AIC of models with $n= \{2,\ldots,15 \}$ regimes.
+
 ## S&P Index
 
-Obtain S&P500 data from 2004 onwards
+Obtain S&P500 data from 2004 onwards with quantmod.
 ```{r}
 getSymbols( '^GSPC',src="yahoo", from="2004-01-01")
     ```
@@ -154,24 +174,33 @@ getSymbols( '^GSPC',src="yahoo", from="2004-01-01")
 values = as.data.frame(GSPC)
 n= nrow(values)
 values$date = as.Date(rownames(values))
+```
 
-ggplot(values, aes(x=date, y=GSPC.Open,group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+There are `r n` opening values of the index.
+
+
+Opening values of S&P500
+```{r}
+ggplot(values, aes(x=date, y=GSPC.Open,group = 1)) + 
+  geom_line() + scale_x_date(breaks = date_breaks("years"),
   labels = date_format('%y')) + xlab('year')
 
 ```
 
+Returns of S&P500
 ```{r}
 gspc.returns = as.data.frame((values[2:n, 1] - values[1:(n-1), 1]) /  values[1:(n-1), 1])
 gspc.returns$date = as.Date(rownames(values)[2:n])
 
 colnames(gspc.returns) = c('returns','date')
 
-ggplot(gspc.returns, aes(x=date, y=returns,group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+ggplot(gspc.returns, aes(x=date, y=returns,group = 1)) +
+  geom_line() + scale_x_date(breaks = date_breaks("years"),
   labels = date_format('%y')) + xlab('Year')
 ```
 
 ```{r}
-k=10
+k=15
 AICs = numeric(length(2:k))
 
 for (i in 2:k) {
@@ -196,8 +225,6 @@ hmmfit <- fit(hmm, verbose = FALSE)
 summary(hmmfit)
 ```
 
-
-
 ```{r}
 dat = posterior(hmmfit)
 dat$date = gspc.returns$date
@@ -205,15 +232,16 @@ dat$ret = gspc.returns$returns
 ```
 
 ```{r}
-ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
-  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set1")
+ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) + 
+  geom_line() + scale_x_date(breaks = date_breaks("years"),
+  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set3")
 ```
 
-The most volatil bear state appears almost only during the subprime crisis. It shows the market was in an exceptional state.
+The lowest AIC is obtained at `r bestk` regimes with AIC `r AICs[bestk]`.
+Looking at the response parameters from the summary, the most volatil bear state appears almost only during the subprime crisis. It shows the market was in an exceptional state.
 
 ## IWM
 
-From etf.com:
 IWM tracks a market-cap-weighted index of US small-cap stocks. The index selects stocks ranked 1,001-3,000 by market cap.
 
 ```{r}
@@ -224,40 +252,49 @@ getSymbols( 'IWM',src="yahoo", from="2004-01-01" )
 values = as.data.frame(IWM)
 n= nrow(values)
 values$date = as.Date(rownames(values))
+```
+There are `r n` opening values of the index.
 
-ggplot(values, aes(x=date, y=IWM.Open,group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+
+Opening values of IWM
+```{r}
+
+ggplot(values, aes(x=date, y=IWM.Open,group = 1)) + 
+  geom_line() + scale_x_date(breaks = date_breaks("years"),
   labels = date_format('%y')) + xlab('year')
 ```
 
+Returns of IWM
 ```{r}
 iwm.returns = as.data.frame((values[2:n, 1] - values[1:(n-1), 1]) /  values[1:(n-1), 1])
 iwm.returns$date = as.Date(rownames(values)[2:n])
 
 colnames(iwm.returns) = c('returns','date')
 
-ggplot(iwm.returns, aes(x=date, y=returns,group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
+ggplot(iwm.returns, aes(x=date, y=returns,group = 1)) +
+  geom_line() + scale_x_date(breaks = date_breaks("years"),
   labels = date_format('%y')) + xlab('Year')
 ```
 
 ```{r}
-k=10
-AICs = numeric(length(2:k))
+k=15
+AICs2 = numeric(length(2:k))
 
 for (i in 2:k) {
   hmm <- depmix(returns ~ 1, family = gaussian(), nstates = i, data=data.frame(iwm.returns))
   hmmfit <- fit(hmm, verbose = FALSE)
-  AICs[i-1] = AIC(hmmfit)
+  AICs2[i-1] = AIC(hmmfit)
 }
 
 ```
 
 ```{r}
-bestk = which.min(AICs) +1
-bestk
+bestk2 = which.min(AICs2) +1
+bestk2
 ```
 
 ```{r}
-hmm <- depmix(returns ~ 1, family = gaussian(), nstates = bestk, data=data.frame(iwm.returns))
+hmm <- depmix(returns ~ 1, family = gaussian(), nstates = bestk2, data=data.frame(iwm.returns))
 hmmfit <- fit(hmm, verbose = FALSE)
 ```
 
@@ -271,12 +308,26 @@ dat$date = iwm.returns$date
 dat$ret = iwm.returns$returns
 ```
 
+
 ```{r}
-ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) + geom_line() + scale_x_date(breaks = date_breaks("years"),
-  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set1")
+ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) +
+    geom_line() + scale_x_date(breaks = date_breaks("years"),
+  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set3")
 ```
 
-Like with the S&P index, the most volatil bear state appears during the crisis.
+The lowest AIC is obtained at `r bestk2` regimes with AIC `r AICs2[bestk2]`.
+Like with the S&P index, the most volatil bear state appears during the crisis, and in the end of 2011 shortly.\hfill \break
+However, the optimal number of regimes has diminished from `r bestk` to `r bestk2`; the IWN is less heterogeneous in nature than the S&P500.
+
+# Conclusion
+
+We have looked at an extension of Hidden Markov Models, called Markov Switching Models. 
+We have first done a simulation study.
+The model recovered well the periods of bear and bull markets.  \hfill \break
+We have achieved Markov Switching Model estimation on financial data.
+It retrieved a special regime for the crisis characterized  by high volatility.
+
+
 
 \pagebreak
 \bibliographystyle{plain}
