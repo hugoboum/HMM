@@ -234,7 +234,7 @@ dat$ret = gspc.returns$returns
 ```{r}
 ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) + 
   geom_line() + scale_x_date(breaks = date_breaks("years"),
-  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set3")
+  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set1")
 ```
 
 The lowest AIC is obtained at `r bestk` regimes with AIC `r AICs[bestk - 1]`.
@@ -312,7 +312,7 @@ dat$ret = iwm.returns$returns
 ```{r}
 ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) +
     geom_line() + scale_x_date(breaks = date_breaks("years"),
-  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set3")
+  labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set1")
 ```
 
 The lowest AIC is obtained at `r bestk2` regimes with AIC `r AICs2[bestk2 -1]`.
