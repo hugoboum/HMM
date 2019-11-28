@@ -151,10 +151,10 @@ The density of states at time $t$ is defined by the vector $\boldsymbol{\pi_{k}}
 
 The non-conditional density of $Y_{t}$ is:
 \[
-\sum\limits_{n=1}^{k}   \pi_{tk}p(Y_{t} | \mu_{k},\sigma_{k})
+\sum\limits_{k=1}^{n}   \pi_{tk}p(Y_{t} | \mu_{k},\sigma_{k})
 \]
 
-In our case the hidden state space is discrete (regimes) , while the observations are continuous (returns). We have to optimize the model parameters, composed of the regimes parameters $\theta_{k} = (\mu_{k},\sigma_{k})$,the transition matrix $P$ and $\boldsymbol{\pi_{t}}$ . Based on observations $y_{1:n}$, random or prior initial parameters,  we use the EM algorithm for the discrete state space. (see course chap 2 part 4.1)
+In our case the hidden state space is discrete (regimes) , while the observations are continuous (returns). We have to optimize the model parameters, composed of the regimes parameters $\theta_{k} = (\mu_{k},\sigma_{k})$,the transition matrix $P$ and state distribution $\boldsymbol{\pi_{t}}$ . Based on observations $y_{1:n}$, random or prior initial parameters,  we use the EM algorithm for the discrete state space. (see course chap 2 part 4.1)
 After this, the estimation of the most likely hidden states sequence to have occured based on the observations and estimated parameters is done by the Viterbi algorithm.(see course chap 2 part 3)
 
 
@@ -237,7 +237,7 @@ ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) +
   labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set3")
 ```
 
-The lowest AIC is obtained at `r bestk` regimes with AIC `r AICs[bestk]`.
+The lowest AIC is obtained at `r bestk` regimes with AIC `r AICs[bestk - 1]`.
 Looking at the response parameters from the summary, the most volatil bear state appears almost only during the subprime crisis. It shows the market was in an exceptional state.
 
 ## IWM
@@ -315,7 +315,7 @@ ggplot(dat, aes(x=date, y=ret,color=factor(state),group = 1)) +
   labels = date_format('%y')) + xlab('Year') + scale_color_brewer(palette="Set3")
 ```
 
-The lowest AIC is obtained at `r bestk2` regimes with AIC `r AICs2[bestk2]`.
+The lowest AIC is obtained at `r bestk2` regimes with AIC `r AICs2[bestk2 -1]`.
 Like with the S&P index, the most volatil bear state appears during the crisis, and in the end of 2011 shortly.\hfill \break
 However, the optimal number of regimes has diminished from `r bestk` to `r bestk2`; the IWN is less heterogeneous in nature than the S&P500.
 
